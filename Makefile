@@ -1,6 +1,6 @@
 CC = gcc -ggdb -Wall -std=c99
 
-all: client server
+all: clean client server
 
 client: csapp.h
 	$(CC) -o client bankclient.c csapp.c 
