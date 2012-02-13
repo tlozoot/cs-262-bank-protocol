@@ -1,9 +1,11 @@
 ﻿Wire protocol for a simple banking application
 =============================================
 
-Student ID: 136
-CS 262, Spring 2012
-2/7/2012
+*Student ID: 136*
+
+*CS 262, Spring 2012*
+
+*2/7/2012*
 
 
 Preliminaries
@@ -55,26 +57,41 @@ two important ways:
 Data types
 ==========
 
-`amt`
------
+amt
+---
 
-Monetary sums are given the data type amt. An amount corresponds to hundredths
-of a dollar (aka pennies) and is represented by an unsigned long long integer
-(8 bytes). This is a safe choice because we can assume, barring the advent of
-hyperinflation, that banking clients are maintaining balances of less than USD
-264 / 100.
+Monetary sums are given the data type `amt`. An amount corresponds to
+hundredths of a dollar (aka pennies) and is represented by an unsigned long
+long integer (8 bytes). This is a safe choice because we can assume, barring
+the advent of hyperinflation, that banking clients are maintaining balances of
+less than USD 264 / 100.
 
 acct
+----
 
-Account numbers are given the data type acct. They are represented by an unsigned long integer (4 bytes). We will assume that the bank does not have more than 232 clients.
+Account numbers are given the data type `acct`. They are represented by an
+unsigned long integer (4 bytes). We will assume that the bank does not have
+more than 2^32 clients.
 
 byte[]
+------
 
+Byte arrays begin with an unsigned short integer (2 bytes) representing its
+size (not including the value of the size itself). A byte array may be empty,
+in which case the entire byte array would be encoded as `0x0000`.
+Transmitting the length is necessary, because byte arrays (and strings) are the
+only variable size elements of a payload. Byte arrays are useful in exceptions
+for returning the message that generated them.
 
-Byte arrays begin with an unsigned short integer (2 bytes) representing its size (not including the value of the size itself). A byte array may be empty, in which case the entire byte array would be encoded as 0x0000. Transmitting the length is necessary, because byte arrays (and strings) are the only variable size elements of a payload. Byte arrays are useful in exceptions for returning the message that generated them.
 string
-Strings are byte arrays with a UTF-8 encoded payload. Thus they begin with an unsigned short integer size, and the empty string would be encoded as 0x0000. 
+------
+
+Strings are byte arrays with a UTF-8 encoded payload. Thus they begin with an
+unsigned short integer size, and the empty string would be encoded as `0x0000`. 
+
 Methods
+=======
+
 accountNumber createAccount(initialDepositAmount);
 A client requests to open an account with initialDepositAmount cents. The server responds with the ID of the newly created account if the operation is successful.
 Client request
