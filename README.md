@@ -1,8 +1,8 @@
 ﻿Wire protocol for a simple banking application
 =============================================
 
-**Student ID: 136**
-**CS 262, Spring 2012**
+**Student ID: 136**  
+**CS 262, Spring 2012**  
 **2/7/2012**
 
 
@@ -95,12 +95,12 @@ accountNumber createAccount(initialDepositAmount);
 
 A client requests to open an account with `initialDepositAmount` cents. The server responds with the ID of the newly created account if the operation is successful.
 
-**Client request**
-_Opcode_: `0x10`
+**Client request**  
+_Opcode_: `0x10`  
 _Payload_: 1. `(amt) initialDepositAmount`
 
-**Server response (success)**
-_Opcode_: `0x11`
+**Server response (success)**  
+_Opcode_: `0x11`  
 _Payload_: 1. `(acct) accountNumber`
 
 balance deposit(acctNumber, amount);
