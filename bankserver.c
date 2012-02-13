@@ -9,7 +9,8 @@ void echo(int connfd);
 
 int main(int argc, char **argv) 
 {
-    int listenfd, connfd, port, clientlen;
+    int listenfd, connfd, port;
+    socklen_t clientlen;
     struct sockaddr_in clientaddr;
     struct hostent *hp;
     char *haddrp;
