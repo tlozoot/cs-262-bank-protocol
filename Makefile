@@ -1,4 +1,4 @@
-CC = gcc -ggdb -Wall -m32 -lpthread
+CC = gcc -ggdb -Wall -lpthread
 
 all: clean client server
 
