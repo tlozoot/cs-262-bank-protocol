@@ -1,12 +1,12 @@
-CC = gcc -ggdb -Wall -std=c99
+CC = gcc -ggdb -Wall -lpthread
 
 all: clean client server
 
-client: csapp.h
-	$(CC) -o client bankclient.c csapp.c 
+client: 
+	$(CC) bankclient.c csapp.c -o client
 
-server: csapp.h
-	$(CC) -o server bankserver.c csapp.c echo.c
+server:
+	$(CC) bankserver.c csapp.c echo.c -o server
 
 clean:
 	rm -rf client server *.o *.dSYM
