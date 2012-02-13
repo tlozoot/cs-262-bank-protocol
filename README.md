@@ -93,7 +93,9 @@ Methods
 accountNumber createAccount(initialDepositAmount);
 --------------------------------------------------
 
-A client requests to open an account with `initialDepositAmount` cents. The server responds with the ID of the newly created account if the operation is successful.
+A client requests to open an account with `initialDepositAmount` cents. The
+server responds with the ID of the newly created account if the operation is
+successful.
 
 **Client request**  
 _Opcode_: `0x10`  
@@ -107,57 +109,72 @@ _Payload_: 1. `(acct) accountNumber`
 balance deposit(acctNumber, amount);
 ------------------------------------
 
-A client requests to deposit amount cents into the account represented by acctNumber. The server responds with account's current balance if it the operation successful. If the specified account does not exist, the server will return a “no such account” exception (see below).
+A client requests to deposit amount cents into the account represented by
+`acctNumber`. The server responds with account's current balance if the
+operation is successful. If the specified account does not exist, the server
+will return a "no such account" exception (see below).
 
-Client request  
-Opcode: 0x20  
-Payload: 1. (acct) acctNumber, 2. (amt) amount
+**Client request**  
+_Opcode_: `0x20`  
+_Payload_: 1. `(acct) acctNumber`, 2. `(amt) amount`
 
-Server response (success)  
-Opcode: 0x21  
-Payload: 1. (amt) balance
+**Server response (success)**  
+_Opcode_: `0x21`  
+_Payload_: 1. `(amt) balance`
 
 
 balance withdraw(acctNumber, amount);
 -------------------------------------
 
-A client requests to withdraw amount cents into the account represented by acctNumber. If the client has more than amount in his account, and the operation is successful, amount will be deducted from his account and the account balance returned. If the client does not have enough money, than an “insufficient funds” exception will be returned. If the specified account does not exist, the server will return a “no such account” exception (see below).
+A client requests to withdraw amount cents into the account represented by
+`acctNumber`. If the client has more than amount in his account, and the
+operation is successful, amount will be deducted from his account and the
+account balance returned. If the client does not have enough money, than an
+"insufficient funds" exception will be returned. If the specified account does
+not exist, the server will return a "no such account" exception (see below).
 
-Client request  
-Opcode: 0x30  
-Payload: 1. (acct) acctNumber, 2. (amt) amount
+**Client request**  
+_Opcode_: `0x30`  
+_Payload_: 1. `(acct) acctNumber`, 2. `(amt) amount`
 
-Server response (success)  
-Opcode: 0x31  
-Payload: 1. (amt) balance
+**Server response (success)**  
+_Opcode_: `0x31`  
+_Payload_: 1. `(amt) balance`
 
 
 balance getBalance(acctNumber);
 -------------------------------
 
-A client requests to deposit amount cents into the account represented by acctNumber. The server responds with account's current balance if it the operation successful.  If the specified account does not exist, the server will return a “no such account” exception (see below).
+A client requests to deposit amount cents into the account represented by
+`acctNumber`. The server responds with account's current balance if it the
+operation successful.  If the specified account does not exist, the server
+will return a "no such account" exception (see below).
 
-Client request  
-Opcode: 0x40  
-Payload: 1. (acct) acctNumber, 2. (amt) amount
+**Client request**  
+_Opcode_: `0x40`  
+_Payload_: 1. `(acct) acctNumber`, 2. `(amt) amount`
 
-Server response (success)  
-Opcode: 0x41  
-Payload: 1. (amt) balance
+**Server response (success)**  
+_Opcode_: `0x41`  
+_Payload_: 1. `(amt) balance`
 
 
 acctStatus close(acctNumber);
 -----------------------------
 
-A client makes a request to close acctNumber. If the operation is successful, the server will return a success response code with no payload.  If the specified account does not exist, the server will return a “no such account” exception. If the operation fails, a general “internal server error” exception will be returned (see below).
+A client makes a request to close `acctNumber`. If the operation is successful,
+the server will return a success response code with no payload.  If the
+specified account does not exist, the server will return a "no such account"
+exception. If the operation fails, a general "internal server error" exception
+will be returned (see below).
 
-Client request  
-Opcode: 0x50  
-Payload: 1. (acct) acctNumber
+**Client request**  
+_Opcode_: `0x50`  
+_Payload_: 1. `(acct) acctNumber`
 
-Server response (success)  
-Opcode: 0x51  
-Payload: [none]
+**Server response (success)**  
+_Opcode_: `0x51`  
+_Payload_: [none]
 
 
 Exceptions
