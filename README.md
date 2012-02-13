@@ -180,43 +180,60 @@ _Payload_: [none]
 Exceptions
 ==========
 
-Exceptions return the request that generated them as payload, along with an optional error message (they may just use the empty string). Returning the original request is helpful in debugging, when there could be many clients and many messages, and it is not clear which messages are generating which exceptions. Including an error string with an exception may be useful for giving more information about a general server error, or suggesting which versions or operation codes are available.
+Exceptions return the request that generated them as payload, along with an
+optional error message (they may just use the empty string). Returning the
+original request is helpful in debugging, when there could be many clients and
+many messages, and it is not clear which messages are generating which
+exceptions. Including an error string with an exception may be useful for
+giving more information about a general server error, or suggesting which
+versions or operation codes are available.
 
 
 Unknown version
 ---------------
 
-The server does not recognize the version of a message and cannot process it. The server returns the version that it parsed from the request.
+The server does not recognize the version of a message and cannot process it.
+The server returns the version that it parsed from the request.
 
-Opcode: 0x90  
-Payload: 1. (byte[]) request, 2. (byte[]) requestVersion, 3. (string) errorMessage
+_Opcode_: `0x90`  
+_Payload_:  1. `(byte[]) request`, 2. `(byte[]) requestVersion`,
+            3. `(string) errorMessage`
 
 
 Unknown operation code
 ----------------------
 
-The server does not recognize the operation code of a message and cannot process it. The server returns the operation code that it parsed from the request.
+The server does not recognize the operation code of a message and cannot
+process it. The server returns the operation code that it parsed from the
+request.
 
-Opcode: 0x91  
-Payload: 1. (byte[]) request, 2. (byte[]) requestOpCode, 3. (string) errorMessage  
+_Opcode_: `0x91`  
+_Payload_:  1. `(byte[]) request`, 2. `(byte[]) requestOpCode`,
+            3. `(string) errorMessage`  
 
 
 Invalid payload
 ---------------
 
-The server doesn't know how to interpret the payload of a message. This could occur, for example, if a payload is the wrong size, or if a string is formatted incorrectly. The server returns the payload that it parsed from the request.
+The server doesn't know how to interpret the payload of a message. This could
+occur, for example, if a payload is the wrong size, or if a string is formatted
+incorrectly. The server returns the payload that it parsed from the request.
 
-Opcode: 0x92  
-Payload: 1. (byte[]) request, 2. (byte[]) requestPayload, 2. (string) errorMessage
+_Opcode_: `0x92`  
+_Payload_:  1. `(byte[]) request`, 2. `(byte[]) requestPayload`, 
+            3. `(string) errorMessage`
 
 
 Insufficient funds
 ------------------
 
-The client tried to withdraw more money than is in the given account. In that case, no money will be deducted from the account and the original account balance will be returned to the client in the payload.
+The client tried to withdraw more money than is in the given account. In that
+case, no money will be deducted from the account and the original account
+balance will be returned to the client in the payload.
 
-Opcode: 0x93  
-Payload: 1. (byte[]) request, 2. (acct) accountNumber, 3. (amt) balance, 4. (string) errorMessage
+_Opcode_: `0x93`  
+_Payload_:  1. `(byte[]) request`, 2. `(acct) accountNumber`,
+            3. `(amt) balance`, 4. `(string) errorMessage`
 
 
 No such account
@@ -224,22 +241,27 @@ No such account
 
 The client requested an operation on an account that doesn't exist.
 
-Opcode: 0x94  
-Payload: 1. (byte[]) request, 2. (acct) accountNumber, 3. (string) errorMessage
+_Opcode_: `0x94`  
+_Payload_:  1. `(byte[]) request`, 2. `(acct) accountNumber`,
+            3. `(string) errorMessage`
 
 
 Request denied
 --------------
 
-The server decides not to process the request due to detection of some kind of fraud or abuse by a client. This could arise, for example, when too many accounts are created too quickly from the same client, or if too much money is deposited in one account.
+The server decides not to process the request due to detection of some kind of
+fraud or abuse by a client. This could arise, for example, when too many
+accounts are created too quickly from the same client, or if too much money is
+deposited in one account.
 
-Opcode: 0x95  
-Payload: 1. (byte[]) request, 2. (string) errorMessage
+_Opcode_: `0x95`  
+_Payload_: 1. `(byte[]) request`, 2. `(string) errorMessage`
 
 Internal server error
 ---------------------
 
-Equivalent to an HTTP 500 response; a catch-all exception for when an arbitrary error occurs on the server while processing a request. 
+Equivalent to an HTTP 500 response; a catch-all exception for when an arbitrary
+error occurs on the server while processing a request. 
 
-Opcode: 0x96  
-Payload: 1. (byte[]) request, 2. (string) errorMessage
+_Opcode_: `0x96`  
+_Payload_: 1. `(byte[]) request`, 2. `(string) errorMessage`
