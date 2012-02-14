@@ -51,36 +51,45 @@ int main(int argc, char **argv)
 }
 
 int parse_buf(char buf[], msg_t *msg)
-{
+{    
+    // Get pointers to start of arguments
+    char *arg1 = strchr(buf, ' ');
+    char *arg2 = strchr(arg1 + 1, ' ');
+        
     if (strncmp(buf, "create", 6) == 0) {
         msg->opcode = 0x10;
-        msg->amt = atoi(buf + 7);
+        msg->amt = atoi(arg1);
         return 1;
     }
     
     else if (strncmp(buf, "deposit", 7) == 0) {
-        msg->opcode = 0x25;
+        msg->opcode = 0x20;
+        msg->acct = atoi(arg1);
+        msg->amt = atoi(arg2);
         return 1;
     }
     
     else if (strncmp(buf, "withdraw", 8) == 0) {
         msg->opcode = 0x30;
+        msg->acct = atoi(arg1);
+        msg->amt = atoi(arg2);
         return 1;
     }
     
     else if (strncmp(buf, "balance", 7) == 0) {
         msg->opcode = 0x40;
+        msg->acct = atoi(arg1);
         return 1;
     }
     
     else if (strncmp(buf, "close", 5) == 0) {
         msg->opcode = 0x50;
+        msg->acct = atoi(arg1);
         return 1;
     }
     
     else if (strncmp(buf, "op", 2) == 0) {
-        int code = atoi(buf + 3);
-        msg->opcode = code;
+        msg->opcode = atoi(arg1);
         return 1;
     }
     
@@ -102,12 +111,11 @@ void print_response(msg_t *response)
                 response->acct, response->amt);
     }
     else if (response->opcode == 0x21) {
-        printf("Server successfully desposited %lld into account %d\n", response->amt, 
-                response->acct);
+        printf("Server successfully desposited into account %d; new balanace is %lld\n", response->acct, 
+                response->amt);
     }
     else if (response->opcode == 0x31) {
-        printf("Server successfully withdrew %lld from account %d\n", response->amt, 
-                response->acct);
+        printf("Server successfully withdrew from account %d; new balance is %lld\n",  response->acct, response->amt);
     }
     else if (response->opcode == 0x41) {
         printf("Account %d has a current balance of %lld\n",  response->acct, response->amt);
@@ -116,25 +124,28 @@ void print_response(msg_t *response)
         printf("Successfully closed account %d\n", response->acct);
     }
     else if (response->opcode == 0x90) {
-        printf("Server exception (Unknown version): '%s'\n", response->error);
+        printf("Server exception 0x90 (Unknown version): '%s'\n", response->error);
     }
     else if (response->opcode == 0x91) {
-        printf("Server exception (Unknown operation code): '%s'\n", response->error);
+        printf("Server exception 0x91 (Unknown operation code): '%s'\n", response->error);
     }
     else if (response->opcode == 0x92) {    
-        printf("Server exception (Invalid payload): '%s'\n", response->error);
+        printf("Server exception 0x92 (Invalid payload): '%s'\n", response->error);
     }
     else if (response->opcode == 0x93) {
-        printf("Server exception (Insufficient funds): '%s'\n", response->error);
+        printf("Server exception 0x93 (Insufficient funds): '%s'\n", response->error);
     }
     else if (response->opcode == 0x94) {
-        printf("Server exception (No such account): '%s'\n", response->error);
+        printf("Server exception 0x94 (No such account): '%s'\n", response->error);
     }
     else if (response->opcode == 0x95) {
-        printf("Server exception (Request denied): '%s'\n", response->error);
+        printf("Server exception 0x95 (Too many accounts): '%s'\n", response->error);
     }
     else if (response->opcode == 0x96) {
-        printf("Server exception (Internal server error): '%s'\n", response->error);
+        printf("Server exception 0x96 (Request denied): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x97) {
+        printf("Server exception 0x97 (Internal server error): '%s'\n", response->error);
     }
     
     else {

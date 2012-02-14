@@ -25,7 +25,7 @@ typedef struct {
     char error[MAX_ERR];
 } msg_t;
 
-size_t message_len(msg_t *msg)
+size_t msg_len(msg_t *msg)
 {
     // printf("Error length: %d\n", (int) strlen(msg->error));
     return strlen(msg->error) + MESSAGE_OVERHEAD;
@@ -34,7 +34,7 @@ size_t message_len(msg_t *msg)
 void hex_dump(msg_t *msg)
 {
     int i;
-    int len = message_len(msg) / sizeof(unsigned short);
+    int len = msg_len(msg) / sizeof(unsigned short);
     for (i = 0; i < len; i++) {
         printf("%04x ", *((unsigned short *) msg + i));
     }

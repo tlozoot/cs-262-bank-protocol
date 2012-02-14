@@ -6,17 +6,33 @@
 #include "csapp.h"
 #include "bank.h"
 
+#define MAX_ACCTS 2
+
+typedef struct {
+    int open;
+    unsigned long long balance;
+} account;
+
+account accounts[MAX_ACCTS];
+
+int get_account(void);
 void handle_connection(int connfd, struct hostent *hp, char *haddrp);
-void raise_exception(int connfd, unsigned short opcode, msg_t *request, char *error_msg);
 
 int main(int argc, char **argv) 
 {
+    // initialze accounts 
+    int i;
+    for (i = 0; i < MAX_ACCTS; i++) {
+        accounts[i].open = 0;
+        accounts[i].balance = 0;
+    }
+    
     int listenfd, connfd, port;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
     struct hostent *hp;
     char *haddrp;
-        
+            
     // Make sure arguments are kosher
     if (argc == 1 || argc == 2) {
         port = (argc == 1) ? DEFAULT_PORT : atoi(argv[1]);
@@ -49,6 +65,19 @@ int main(int argc, char **argv)
     exit(0);
 }
 
+int open_account(void)
+{
+    int i;
+    for (i = 0; i < MAX_ACCTS; i++) {
+        if (! accounts[i].open) {
+            accounts[i].open = 1;
+            return i;
+        }
+    }
+    
+    return -1; // if no open accounts
+}
+
 void handle_connection(int connfd, struct hostent *hp, char *haddrp) 
 {
     size_t len; 
@@ -56,38 +85,127 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
     msg_t *response = new_msg();
     
     // Loop to handle multiple messages from one client. 
-    while((len = Rio_readn(connfd, (void *) request, sizeof(msg_t))) != 0) {
-        // printf("request: "); hex_dump(request);
+    while ((len = Rio_readn(connfd, (void *) request, sizeof(msg_t))) != 0)
+    {             
+        if (request->version != VERSION) {
+            printf("%s (%s) - [version %d]\n", hp->h_name, haddrp, request->version);
+            response->opcode = 0x90;
+            sprintf(response->error, "Incompatible version number %d (expected version %d)", request->version, VERSION);
+            printf("# Error 0x91 (Unknown version): %s\n", response->error);   
+        }
         
-        if (request->opcode == 0x10) {
-            unsigned long long amount = request->amt;
-            printf("%s (%s) - create %lld\n", hp->h_name, haddrp, amount);
+        else if (request->opcode == 0x10) {
+            printf("%s (%s) - create %lld\n", hp->h_name, haddrp, request->amt);
 
-            unsigned int account = rand(); // create_account(amount);
-            response->opcode = 0x11;
-            response->amt = amount;
-            response->acct = account;
-
-            printf(" * created account %d with intial deposit %lld\n", account, amount);
-            fflush(stdout);
-        }
-        else if (request->opcode == 0x20) {
+            int account = open_account();
+            accounts[account].balance = request->amt;
             
+            response->amt = request->amt;
+            response->acct = (unsigned int) account;
+            
+            if (account == -1) {
+                response->opcode = 0x97;
+                sprintf(response->error, "The maxnimum number of accounts is %d", MAX_ACCTS);
+                printf("Error 0x95 (Too many accounts): %s\n", response->error);
+            }
+            else {
+                response->opcode = 0x11;
+                printf("# Created account %d with intial deposit %lld\n", account, response->amt);                
+            }
         }
+        
+        else if (request->opcode == 0x20) {
+            printf("%s (%s) - deposit %d %lld\n", hp->h_name, haddrp, request->acct, request->amt);
+            
+            response->acct = request->acct;
+            
+            if ((request->acct < MAX_ACCTS) && accounts[request->acct].open)
+            {
+                accounts[request->acct].balance += request->amt;
+                response->amt = accounts[request->acct].balance;
+                response->opcode = 0x21;
+                printf("# Deposited %lld into account %d (new balance: %lld) \n", request->amt, request->acct, response->amt);                
+            }
+            
+            else {
+                response->opcode = 0x94;
+                sprintf(response->error, "Account %d does not exist", request->acct);
+                printf("# Error 0x94 (No such account): %s\n", response->error);
+            }       
+        }
+        
         else if (request->opcode == 0x30) {
+            printf("%s (%s) - withdraw %d %lld\n", hp->h_name, haddrp, request->acct, request->amt);
+            
+            response->acct = request->acct;
+            
+            if ((request->acct < MAX_ACCTS) && accounts[request->acct].open)
+            {    
+                if (request->amt > accounts[request->acct].balance) {
+                    response->opcode = 0x93;
+                    sprintf(response->error, "Account %d has a balance of %lld, but %lld was requested for withdrawl",
+                            request->acct, accounts[request->acct].balance, request->amt);
+                    printf("# Error 0x93 (Insufficient funds): %s\n", response->error);
+                }
+                else { 
+                    accounts[request->acct].balance -= request->amt;
+                    response->amt = accounts[request->acct].balance;
+                    response->opcode = 0x31;
+                    printf("# Withdrew %lld from account %d (new balance: %lld) \n", request->amt, request->acct, response->amt);                
+                }
+            }
+            
+            else {
+                response->opcode = 0x94;
+                sprintf(response->error, "Account %d does not exist", request->acct);
+                printf("# Error 0x94 (No such account): %s\n", response->error);
+            }       
         
         }
         else if (request->opcode == 0x40) {
-        
+            printf("%s (%s) - balance %d\n", hp->h_name, haddrp, request->acct);
+            
+            response->acct = request->acct;
+            
+            if ((request->acct < MAX_ACCTS) && accounts[request->acct].open)
+            {
+                response->amt = accounts[request->acct].balance;                
+                response->opcode = 0x41;
+                printf("# Account %d has balance %lld\n", request->acct, response->amt);                
+            }
+            
+            else {
+                response->opcode = 0x94;
+                sprintf(response->error, "Account %d does not exist", request->acct);
+                printf("# Error 0x94 (No such account): %s\n", response->error);
+            }       
         }
+        
         else if (request->opcode == 0x50) {
-        
+            printf("%s (%s) - balance %d %lld\n", hp->h_name, haddrp, request->acct, request->amt);
+            
+            response->acct = request->acct;
+            
+            if ((request->acct < MAX_ACCTS) && accounts[request->acct].open)
+            {
+                response->amt = accounts[request->acct].balance;
+                accounts[request->acct].balance = 0;
+                accounts[request->acct].open = 0;
+                response->opcode = 0x51;
+                printf("# Account %d was closed with final balance %lld\n", request->acct, response->amt);                
+            }
+            else {
+                response->opcode = 0x94;
+                sprintf(response->error, "Account %d does not exist", request->acct);
+                printf("# Error 0x94 (No such account): %s\n", response->error);
+            }       
         }
+        
         else {
-            char error[MAX_LINE];
-            sprintf(error, "Opcode 0x%x was not recognized", request->opcode);
-            raise_exception(connfd, 0x91, request, error);
-            printf("%s (%s) - [unknown opcode]\n", hp->h_name, haddrp);
+            printf("%s (%s) - [opcode %d]\n", hp->h_name, haddrp, request->opcode);
+            response->opcode = 0x91;
+            sprintf(response->error, "Opcode 0x%x was not recognized", request->opcode);
+            printf("# Error 0x91 (Unknown opcode): %s\n", response->error);
         }
         
         // send bits back to client
@@ -97,15 +215,5 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
     }    
     
     free(request);
-    free(response);
-}
-
-void raise_exception(int connfd, unsigned short opcode, msg_t *request, char *error_msg)
-{
-    msg_t *response = new_msg();
-    response->opcode = opcode;
-    strncpy(response->error, error_msg, MAX_ERR);
-
-    Rio_writen(connfd, (void *) response, sizeof(msg_t));
     free(response);
 }
