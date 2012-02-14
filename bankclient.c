@@ -111,7 +111,7 @@ void print_response(msg_t *response)
                 response->acct, response->amt);
     }
     else if (response->opcode == 0x21) {
-        printf("Server successfully desposited into account %d; new balanace is %lld\n", response->acct, 
+        printf("Server successfully desposited into account %d; new balance is %lld\n", response->acct, 
                 response->amt);
     }
     else if (response->opcode == 0x31) {

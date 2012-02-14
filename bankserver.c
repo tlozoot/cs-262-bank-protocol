@@ -6,7 +6,7 @@
 #include "csapp.h"
 #include "bank.h"
 
-#define MAX_ACCTS 2
+#define MAX_ACCTS 32
 
 typedef struct {
     int open;
