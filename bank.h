@@ -7,20 +7,52 @@
 #include <stdint.h>
 
 #define VERSION 1
-#define MAX_MESSAGE_SIZE 65536
-#define MESSAGE_OVERHEAD 4
-#define MAX_PAYLOAD_SIZE MAX_MESSAGE_SIZE - MESSAGE_OVERHEAD
+#define MAX_MSG 65536
+#define MESSAGE_OVERHEAD 16
+#define MAX_ERR MAX_MSG - MESSAGE_OVERHEAD
 
 #define DEFAULT_PORT 8372
 #define DEFAULT_HOST "localhost"
 
-typedef struct {
-    short unsigned version;
-    short unsigned opcode;
-    char payload[MAX_PAYLOAD_SIZE];
-} protocol_message;
+// typedef (unsigned long long) amt_t;
+// typedef (unsigned long) acct_t;
 
-size_t message_len(protocol_message *msg)
+typedef struct {
+    unsigned short version;
+    unsigned short opcode;
+    unsigned int acct;
+    unsigned long long amt;
+    char error[MAX_ERR];
+} msg_t;
+
+size_t message_len(msg_t *msg)
 {
-    return strlen(msg->payload) + MESSAGE_OVERHEAD;
+    // printf("Error length: %d\n", (int) strlen(msg->error));
+    return strlen(msg->error) + MESSAGE_OVERHEAD;
+}
+
+void hex_dump(msg_t *msg)
+{
+    int i;
+    int len = message_len(msg) / sizeof(unsigned short);
+    for (i = 0; i < len; i++) {
+        printf("%04x ", *((unsigned short *) msg + i));
+    }
+    printf("\n");
+}
+
+void clear_msg(msg_t *msg)
+{
+    msg->version = 0x1;
+    msg->opcode = 0;
+    msg->acct = 0;
+    msg->amt = 0;
+    msg->error[0] = '\0';
+}
+
+msg_t *new_msg()
+{
+    msg_t *msg = malloc(sizeof(msg_t));
+    clear_msg(msg);
+    return msg;
 }

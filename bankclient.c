@@ -6,15 +6,14 @@
 #include "csapp.h"
 #include "bank.h"
 
-void parse_buf(char buf[], protocol_message *msg);
+int parse_buf(char buf[], msg_t *msg);
 
-void print_response(protocol_message *response);
+void print_response(msg_t *response);
 
 int main(int argc, char **argv) 
 {
     int clientfd, port;
-    char *host, buf[MAXLINE];
-    rio_t rio;
+    char *host, buf[MAX_LINE];
     
     if (argc == 2 || argc == 3) {
         host = argv[1];
@@ -26,35 +25,96 @@ int main(int argc, char **argv)
     }    
     
     clientfd = Open_clientfd(host, port);
-    Rio_readinitb(&rio, clientfd);
     
     printf("Bank client v.%d connected to %s on port %d\n", VERSION, host, port);
     
-    protocol_message *request = malloc(sizeof(protocol_message));
-    request->version = VERSION;
+    msg_t *request = new_msg();
+    msg_t *response = new_msg();
     
-    while (Fgets(buf, MAXLINE, stdin) != NULL) {
-        parse_buf(buf, request);
-        Rio_writen(clientfd, (void *) request, message_len(request)); // Send bits to server
-        
-        Rio_readlineb(&rio, buf, MAXLINE); // Get bits back from server
-        print_response((protocol_message *) buf);
+    printf("> "); fflush(stdout);
+    while (Fgets(buf, MAX_LINE, stdin) != NULL) {
+        if (parse_buf(buf, request)) {
+            Rio_writen(clientfd, (void *) request, sizeof(msg_t)); // Send bits to server
+            Rio_readn(clientfd, (void *) response, sizeof(msg_t)); // Get bits back from server
+            print_response(response);    
+        }
+        clear_msg(request);
+        clear_msg(response);
+        printf("> "); fflush(stdout);
     }
     
-    Close(clientfd); //line:netp:echoclient:close
+    Close(clientfd); 
     free(request);
+    free(response);
     exit(0);
 }
 
-void parse_buf(char buf[], protocol_message *msg)
+int parse_buf(char buf[], msg_t *msg)
 {
-    msg->opcode = 0x21;
-    strncpy(msg->payload, buf, MAX_PAYLOAD_SIZE);
+    if (strncmp(buf, "create", 6) == 0) {
+        msg->opcode = 0x10;
+        msg->amt = atoi(buf + 7);
+        msg->acct = 0xffffffff;
+        strncpy(msg->error, "Who's there?", 12);
+        fflush(stdout);
+        return 1;
+    }
+    
+    else if (strncmp(buf, "deposit", 7) == 0) {
+        msg->opcode = 0x20;
+        return 1;
+    }
+    
+    else if (strncmp(buf, "withdraw", 8) == 0) {
+        msg->opcode = 0x30;
+        return 1;
+    }
+    
+    else if (strncmp(buf, "balance", 7) == 0) {
+        msg->opcode = 0x40;
+        return 1;
+    }
+    
+    else if (strncmp(buf, "close", 5) == 0) {
+        msg->opcode = 0x50;
+        return 1;
+    }
+    else {
+        printf("Command not understood.\n");
+        return 0;
+    }
 }
 
-void print_response(protocol_message *response)
-{
-    printf("Client received a message of length %d bytes\n", (int) message_len(response));
-    printf("Opcode: %x\n", response->opcode);
-    printf("Payload: %s\n\n", response->payload);
+void print_response(msg_t *response)
+{   
+    // printf("response: "); hex_dump(response);
+    // printf("Client received a message of length %d bytes\n", (int) message_len(response));
+    
+    if (response->version != VERSION) {
+        printf("Unknown server version %d\n", response->version);
+        return;
+    }
+    
+    if (response->opcode == 0x11) {
+        printf("Server successfully created account %d with initial deposit %lld\n", 
+                response->acct, response->amt);
+    }
+    else if (response->opcode == 0x21) {
+        
+    }
+    else if (response->opcode == 0x31) {
+    
+    }
+    else if (response->opcode == 0x41) {
+    
+    }
+    else if (response->opcode == 0x51) {
+    
+    }
+    else {
+        printf("Didn't understand server response\n");
+        // raise_exception(connfd, 0x91, request, request->opcode, "Unknown opcode");
+    }
+    
+    fflush(stdout);
 }

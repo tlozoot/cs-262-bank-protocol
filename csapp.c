@@ -533,16 +533,16 @@ ssize_t rio_readn(int fd, void *usrbuf, size_t n)
     char *bufp = usrbuf;
 
     while (nleft > 0) {
-	if ((nread = read(fd, bufp, nleft)) < 0) {
-	    if (errno == EINTR) /* interrupted by sig handler return */
-		nread = 0;      /* and call read() again */
-	    else
-		return -1;      /* errno set by read() */ 
-	} 
-	else if (nread == 0)
-	    break;              /* EOF */
-	nleft -= nread;
-	bufp += nread;
+    	if ((nread = read(fd, bufp, nleft)) < 0) {
+    	    if (errno == EINTR) /* interrupted by sig handler return */
+    		    nread = 0;      /* and call read() again */
+    	    else
+    		    return -1;      /* errno set by read() */ 
+    	} 
+    	else if (nread == 0)
+    	    break;              /* EOF */
+    	nleft -= nread;
+    	bufp += nread;
     }
     return (n - nleft);         /* return >= 0 */
 }
@@ -633,16 +633,16 @@ ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
     char *bufp = usrbuf;
     
     while (nleft > 0) {
-	if ((nread = rio_read(rp, bufp, nleft)) < 0) {
-	    if (errno == EINTR) /* interrupted by sig handler return */
-		nread = 0;      /* call read() again */
-	    else
-		return -1;      /* errno set by read() */ 
-	} 
-	else if (nread == 0)
-	    break;              /* EOF */
-	nleft -= nread;
-	bufp += nread;
+    	if ((nread = rio_read(rp, bufp, nleft)) < 0) {
+    	    if (errno == EINTR) /* interrupted by sig handler return */
+    		    nread = 0;      /* call read() again */
+    	    else
+    		    return -1;      /* errno set by read() */ 
+    	} 
+    	else if (nread == 0)
+    	    break;              /* EOF */
+    	nleft -= nread;
+    	bufp += nread;
     }
     return (n - nleft);         /* return >= 0 */
 }
@@ -658,17 +658,17 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen)
     char c, *bufp = usrbuf;
 
     for (n = 1; n < maxlen; n++) { 
-	if ((rc = rio_read(rp, &c, 1)) == 1) {
-	    *bufp++ = c;
-	    if (c == '\n')
-		break;
-	} else if (rc == 0) {
-	    if (n == 1)
-		return 0; /* EOF, no data read */
-	    else
-		break;    /* EOF, some data was read */
-	} else
-	    return -1;	  /* error */
+    	if ((rc = rio_read(rp, &c, 1)) == 1) {
+    	    *bufp++ = c;
+    	    if (c == '\n')
+    		    break;
+    	} else if (rc == 0) {
+    	    if (n == 1)
+    		    return 0; /* EOF, no data read */
+    	    else
+    		    break;    /* EOF, some data was read */
+    	} else
+    	    return -1;	  /* error */
     }
     *bufp = 0;
     return n;

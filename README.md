@@ -103,7 +103,7 @@ _Payload_: 1. `(amt) initialDepositAmount`
 
 **Server response (success)**  
 _Opcode_: `0x11`  
-_Payload_: 1. `(acct) accountNumber`
+_Payload_: 1. `(acct) accountNumber` 2. `(amt) initialDepositAmount`
 
 
 balance deposit(acctNumber, amount);
