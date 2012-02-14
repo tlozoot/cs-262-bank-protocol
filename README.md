@@ -1,4 +1,9 @@
-﻿Wire protocol for a simple banking application
+﻿TODO: 
+- Fix this spec (new message format and exceptions)
+- Maybe add new exception for balances being too large (both client and server checks) 
+
+
+Wire protocol for a simple banking application
 =============================================
 
 **Student ID: 136**  
