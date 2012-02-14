@@ -6,7 +6,7 @@
 #include "csapp.h"
 #include "bank.h"
 
-void echo(int connfd);
+void handle_connection(int connfd);
 
 int main(int argc, char **argv) 
 {
@@ -16,6 +16,7 @@ int main(int argc, char **argv)
     struct hostent *hp;
     char *haddrp;
     
+    // Make sure arguments are kosher
     if (argc == 1 || argc == 2) {
         port = (argc == 1) ? DEFAULT_PORT : atoi(argv[1]);
     } else {
@@ -23,10 +24,11 @@ int main(int argc, char **argv)
         exit(0);
     }
     
+    // Start listening
     listenfd = Open_listenfd(port);
-    
     printf("Starting banking server v.%d on port %d\n", VERSION, port);
     
+    // Loop to accept multiple clients
     while (1) {
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
@@ -35,29 +37,30 @@ int main(int argc, char **argv)
         hp = Gethostbyaddr((const char *)&clientaddr.sin_addr.s_addr, 
                sizeof(clientaddr.sin_addr.s_addr), AF_INET);
         haddrp = inet_ntoa(clientaddr.sin_addr);
-        printf("server connected to %s (%s)\n", hp->h_name, haddrp);
         
-        echo(connfd);
+        printf("Accepted connection from %s (%s)\n", hp->h_name, haddrp);
+        handle_connection(connfd);
         Close(connfd);
+        printf("Closed connection from %s (%s)\n", hp->h_name, haddrp);
     }
     
     exit(0);
 }
 
-void echo(int connfd) 
+void handle_connection(int connfd) 
 {
     size_t n; 
-    char buf[MAXLINE];
     protocol_message *msg;
     rio_t rio;
     
     Rio_readinitb(&rio, connfd);
-    while((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) { //line:netp:echo:eof
-        msg = (protocol_message *) buf;
+    
+    // Loop to handle multiple messages from one client. 
+    while((n = Rio_readlineb(&rio, (void *) msg, MAXLINE)) != 0) { //line:netp:echo:eof
         printf("Server received a message of length %d bytes\n", (int) n);
         printf("Opcode: %x\n", msg->opcode);
         printf("Payload: %s\n\n", msg->payload);
         
-        Rio_writen(connfd, buf, n);
-    }
+        Rio_writen(connfd, (void *) msg, message_len(msg)); // send bits back to client
+    }    
 }
