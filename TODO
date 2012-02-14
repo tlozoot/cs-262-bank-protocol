@@ -1,0 +1,6 @@
+TODO: 
+- Fix this spec (new message format and exceptions)
+- Maybe add new exception for balances being too large (both client and server check) 
+
+
+
