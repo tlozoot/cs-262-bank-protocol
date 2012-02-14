@@ -85,7 +85,7 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
         }
         else {
             char error[MAX_LINE];
-            sprintf(error, "Unknown opcode: %d", request->opcode);
+            sprintf(error, "Opcode 0x%x was not recognized", request->opcode);
             raise_exception(connfd, 0x91, request, error);
             printf("%s (%s) - [unknown opcode]\n", hp->h_name, haddrp);
         }
@@ -104,7 +104,8 @@ void raise_exception(int connfd, unsigned short opcode, msg_t *request, char *er
 {
     msg_t *response = new_msg();
     response->opcode = opcode;
-    
+    strncpy(response->error, error_msg, MAX_ERR);
+
     Rio_writen(connfd, (void *) response, sizeof(msg_t));
     free(response);
 }

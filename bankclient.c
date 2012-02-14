@@ -38,8 +38,9 @@ int main(int argc, char **argv)
             Rio_readn(clientfd, (void *) response, sizeof(msg_t)); // Get bits back from server
             print_response(response);    
         }
+        
         clear_msg(request);
-        clear_msg(response);
+        clear_msg(response);        
         printf("> "); fflush(stdout);
     }
     
@@ -54,14 +55,11 @@ int parse_buf(char buf[], msg_t *msg)
     if (strncmp(buf, "create", 6) == 0) {
         msg->opcode = 0x10;
         msg->amt = atoi(buf + 7);
-        msg->acct = 0xffffffff;
-        strncpy(msg->error, "Who's there?", 12);
-        fflush(stdout);
         return 1;
     }
     
     else if (strncmp(buf, "deposit", 7) == 0) {
-        msg->opcode = 0x20;
+        msg->opcode = 0x25;
         return 1;
     }
     
@@ -79,6 +77,13 @@ int parse_buf(char buf[], msg_t *msg)
         msg->opcode = 0x50;
         return 1;
     }
+    
+    else if (strncmp(buf, "op", 2) == 0) {
+        int code = atoi(buf + 3);
+        msg->opcode = code;
+        return 1;
+    }
+    
     else {
         printf("Command not understood.\n");
         return 0;
@@ -87,9 +92,6 @@ int parse_buf(char buf[], msg_t *msg)
 
 void print_response(msg_t *response)
 {   
-    // printf("response: "); hex_dump(response);
-    // printf("Client received a message of length %d bytes\n", (int) message_len(response));
-    
     if (response->version != VERSION) {
         printf("Unknown server version %d\n", response->version);
         return;
@@ -100,20 +102,43 @@ void print_response(msg_t *response)
                 response->acct, response->amt);
     }
     else if (response->opcode == 0x21) {
-        
+        printf("Server successfully desposited %lld into account %d\n", response->amt, 
+                response->acct);
     }
     else if (response->opcode == 0x31) {
-    
+        printf("Server successfully withdrew %lld from account %d\n", response->amt, 
+                response->acct);
     }
     else if (response->opcode == 0x41) {
-    
+        printf("Account %d has a current balance of %lld\n",  response->acct, response->amt);
     }
     else if (response->opcode == 0x51) {
-    
+        printf("Successfully closed account %d\n", response->acct);
     }
+    else if (response->opcode == 0x90) {
+        printf("Server exception (Unknown version): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x91) {
+        printf("Server exception (Unknown operation code): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x92) {    
+        printf("Server exception (Invalid payload): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x93) {
+        printf("Server exception (Insufficient funds): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x94) {
+        printf("Server exception (No such account): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x95) {
+        printf("Server exception (Request denied): '%s'\n", response->error);
+    }
+    else if (response->opcode == 0x96) {
+        printf("Server exception (Internal server error): '%s'\n", response->error);
+    }
+    
     else {
         printf("Didn't understand server response\n");
-        // raise_exception(connfd, 0x91, request, request->opcode, "Unknown opcode");
     }
     
     fflush(stdout);
