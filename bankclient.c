@@ -107,21 +107,21 @@ void print_response(msg_t *response)
     }
     
     if (response->opcode == 0x11) {
-        printf("Server successfully created account %d with initial deposit %llu\n", 
+        printf("Server successfully created account %u with initial deposit %llu\n", 
                 response->acct, response->amt);
     }
     else if (response->opcode == 0x21) {
-        printf("Server successfully desposited into account %d; new balance is %llu\n", response->acct, 
+        printf("Server successfully desposited into account %u; new balance is %llu\n", response->acct, 
                 response->amt);
     }
     else if (response->opcode == 0x31) {
-        printf("Server successfully withdrew from account %d; new balance is %lld\n",  response->acct, response->amt);
+        printf("Server successfully withdrew from account %u; new balance is %llu\n",  response->acct, response->amt);
     }
     else if (response->opcode == 0x41) {
-        printf("Account %d has a current balance of %lld\n",  response->acct, response->amt);
+        printf("Account %u has a current balance of %llu\n",  response->acct, response->amt);
     }
     else if (response->opcode == 0x51) {
-        printf("Successfully closed account %d\n", response->acct);
+        printf("Successfully closed account %u\n", response->acct);
     }
     else if (response->opcode == 0x90) {
         printf("Server exception 0x90 (Unknown version): '%s'\n", response->error);

@@ -95,7 +95,7 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
         }
         
         else if (request->opcode == 0x10) {
-            printf("%s (%s) - create %lld\n", hp->h_name, haddrp, request->amt);
+            printf("%s (%s) - create %llu\n", hp->h_name, haddrp, request->amt);
 
             int account = open_account();
             accounts[account].balance = request->amt;
@@ -105,17 +105,17 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
             
             if (account == -1) {
                 response->opcode = 0x97;
-                sprintf(response->error, "The maxnimum number of accounts is %d", MAX_ACCTS);
+                sprintf(response->error, "The maxnimum number of accounts is %u", MAX_ACCTS);
                 printf("Error 0x95 (Too many accounts): %s\n", response->error);
             }
             else {
                 response->opcode = 0x11;
-                printf("# Created account %d with intial deposit %lld\n", account, response->amt);                
+                printf("# Created account %u with intial deposit %llu\n", account, response->amt);                
             }
         }
         
         else if (request->opcode == 0x20) {
-            printf("%s (%s) - deposit %d %lld\n", hp->h_name, haddrp, request->acct, request->amt);
+            printf("%s (%s) - deposit %u %llu\n", hp->h_name, haddrp, request->acct, request->amt);
             
             response->acct = request->acct;
             
@@ -124,18 +124,18 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
                 accounts[request->acct].balance += request->amt;
                 response->amt = accounts[request->acct].balance;
                 response->opcode = 0x21;
-                printf("# Deposited %lld into account %d (new balance: %lld) \n", request->amt, request->acct, response->amt);                
+                printf("# Deposited %llu into account %u (new balance: %llu) \n", request->amt, request->acct, response->amt);                
             }
             
             else {
                 response->opcode = 0x94;
-                sprintf(response->error, "Account %d does not exist", request->acct);
+                sprintf(response->error, "Account %u does not exist", request->acct);
                 printf("# Error 0x94 (No such account): %s\n", response->error);
             }       
         }
         
         else if (request->opcode == 0x30) {
-            printf("%s (%s) - withdraw %d %lld\n", hp->h_name, haddrp, request->acct, request->amt);
+            printf("%s (%s) - withdraw %u %llu\n", hp->h_name, haddrp, request->acct, request->amt);
             
             response->acct = request->acct;
             
@@ -143,7 +143,7 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
             {    
                 if (request->amt > accounts[request->acct].balance) {
                     response->opcode = 0x93;
-                    sprintf(response->error, "Account %d has a balance of %lld, but %lld was requested for withdrawl",
+                    sprintf(response->error, "Account %u has a balance of %llu, but %llu was requested for withdrawl",
                             request->acct, accounts[request->acct].balance, request->amt);
                     printf("# Error 0x93 (Insufficient funds): %s\n", response->error);
                 }
@@ -151,19 +151,19 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
                     accounts[request->acct].balance -= request->amt;
                     response->amt = accounts[request->acct].balance;
                     response->opcode = 0x31;
-                    printf("# Withdrew %lld from account %d (new balance: %lld) \n", request->amt, request->acct, response->amt);                
+                    printf("# Withdrew %llu from account %u (new balance: %llu) \n", request->amt, request->acct, response->amt);                
                 }
             }
             
             else {
                 response->opcode = 0x94;
-                sprintf(response->error, "Account %d does not exist", request->acct);
+                sprintf(response->error, "Account %u does not exist", request->acct);
                 printf("# Error 0x94 (No such account): %s\n", response->error);
             }       
         
         }
         else if (request->opcode == 0x40) {
-            printf("%s (%s) - balance %d\n", hp->h_name, haddrp, request->acct);
+            printf("%s (%s) - balance %u\n", hp->h_name, haddrp, request->acct);
             
             response->acct = request->acct;
             
@@ -171,18 +171,18 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
             {
                 response->amt = accounts[request->acct].balance;                
                 response->opcode = 0x41;
-                printf("# Account %d has balance %lld\n", request->acct, response->amt);                
+                printf("# Account %u has balance %llu\n", request->acct, response->amt);                
             }
             
             else {
                 response->opcode = 0x94;
-                sprintf(response->error, "Account %d does not exist", request->acct);
+                sprintf(response->error, "Account %u does not exist", request->acct);
                 printf("# Error 0x94 (No such account): %s\n", response->error);
             }       
         }
         
         else if (request->opcode == 0x50) {
-            printf("%s (%s) - balance %d %lld\n", hp->h_name, haddrp, request->acct, request->amt);
+            printf("%s (%s) - balance %u %llu\n", hp->h_name, haddrp, request->acct, request->amt);
             
             response->acct = request->acct;
             
@@ -192,11 +192,11 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
                 accounts[request->acct].balance = 0;
                 accounts[request->acct].open = 0;
                 response->opcode = 0x51;
-                printf("# Account %d was closed with final balance %lld\n", request->acct, response->amt);                
+                printf("# Account %u was closed with final balance %llu\n", request->acct, response->amt);                
             }
             else {
                 response->opcode = 0x94;
-                sprintf(response->error, "Account %d does not exist", request->acct);
+                sprintf(response->error, "Account %u does not exist", request->acct);
                 printf("# Error 0x94 (No such account): %s\n", response->error);
             }       
         }
