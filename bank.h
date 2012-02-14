@@ -27,7 +27,6 @@ typedef struct {
 
 size_t msg_len(msg_t *msg)
 {
-    // printf("Error length: %d\n", (int) strlen(msg->error));
     return strlen(msg->error) + MESSAGE_OVERHEAD;
 }
 

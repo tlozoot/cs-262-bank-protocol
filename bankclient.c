@@ -107,11 +107,11 @@ void print_response(msg_t *response)
     }
     
     if (response->opcode == 0x11) {
-        printf("Server successfully created account %d with initial deposit %lld\n", 
+        printf("Server successfully created account %d with initial deposit %llu\n", 
                 response->acct, response->amt);
     }
     else if (response->opcode == 0x21) {
-        printf("Server successfully desposited into account %d; new balance is %lld\n", response->acct, 
+        printf("Server successfully desposited into account %d; new balance is %llu\n", response->acct, 
                 response->amt);
     }
     else if (response->opcode == 0x31) {
