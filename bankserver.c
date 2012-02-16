@@ -143,6 +143,7 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
             {    
                 if (request->amt > accounts[request->acct].balance) {
                     response->opcode = 0x93;
+                    response->amt = accounts[request->acct].balance;
                     sprintf(response->error, "Account %u has a balance of %llu, but %llu was requested for withdrawl",
                             request->acct, accounts[request->acct].balance, request->amt);
                     printf("# Error 0x93 (Insufficient funds): %s\n", response->error);
