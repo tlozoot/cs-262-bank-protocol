@@ -435,7 +435,7 @@ struct hostent *Gethostbyname(const char *name)
     struct hostent *p;
 
     if ((p = gethostbyname(name)) == NULL)
-	dns_error("Gethostbyname error");
+	    dns_error("Gethostbyname error");
     return p;
 }
 /* $end gethostbyname */
@@ -445,7 +445,7 @@ struct hostent *Gethostbyaddr(const char *addr, int len, int type)
     struct hostent *p;
 
     if ((p = gethostbyaddr(addr, len, type)) == NULL)
-	dns_error("Gethostbyaddr error");
+	    dns_error("Gethostbyaddr error");
     return p;
 }
 
@@ -794,10 +794,10 @@ int Open_clientfd(char *hostname, int port)
     int rc;
 
     if ((rc = open_clientfd(hostname, port)) < 0) {
-	if (rc == -1)
-	    unix_error("Open_clientfd Unix error");
-	else        
-	    dns_error("Open_clientfd DNS error");
+    	if (rc == -1)
+    	    unix_error("Open_clientfd Unix error");
+    	else        
+    	    dns_error("Open_clientfd DNS error");
     }
     return rc;
 }
@@ -807,7 +807,7 @@ int Open_listenfd(int port)
     int rc;
 
     if ((rc = open_listenfd(port)) < 0)
-	unix_error("Open_listenfd error");
+	    unix_error("Open_listenfd error");
     return rc;
 }
 /* $end csapp.c */

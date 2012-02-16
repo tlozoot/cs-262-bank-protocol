@@ -30,7 +30,16 @@ Protocol messages have the following format:
 
 2. Operation code [1 byte]
 
-3. Payload [size determined by operation code]
+3. Account number [4 bytes]
+
+4. Amount [8 bytes]
+
+5. Error string [1 - 64k bytes]
+
+Although all messages have this format, not every field will be defined in
+every message. For example, the account number is undefined when opening an
+account. Error strings are always optional. No message will be more than 
+65535 bytes.
 
 
 These messages differ from the
@@ -46,14 +55,19 @@ two important ways:
 
 2.  Payload size isn't a necessary part of this protocol, because the payload
     size can be determined from the op code (as with CPU instructions).
-    Payloads only vary in size when they contain a string or byte array, and
-    those types are responsible for encoding how long they are (see below). If
-    a payload consists of multiple arguments, then they are simply concatenated
-    with no additional overhead. 
+    Payloads only vary in size when they contain a string, and
+    those types are responsible for encoding how long they are (see below).
 
 
 Data types
 ==========
+
+acct
+----
+
+Account numbers are given the data type `acct`. They are represented by an
+unsigned integer (4 bytes). We will assume that the bank does not have
+more than 2^32 clients.
 
 amt
 ---
@@ -64,28 +78,12 @@ long integer (8 bytes). This is a safe choice because we can assume, barring
 the advent of hyperinflation, that banking clients are maintaining balances of
 less than USD 264 / 100.
 
-acct
-----
-
-Account numbers are given the data type `acct`. They are represented by an
-unsigned long integer (4 bytes). We will assume that the bank does not have
-more than 2^32 clients.
-
-byte[]
-------
-
-Byte arrays begin with an unsigned short integer (2 bytes) representing its
-size (not including the value of the size itself). A byte array may be empty,
-in which case the entire byte array would be encoded as `0x0000`.
-Transmitting the length is necessary, because byte arrays (and strings) are the
-only variable size elements of a payload. Byte arrays are useful in exceptions
-for returning the message that generated them.
 
 string
 ------
 
-Strings are byte arrays with a UTF-8 encoded payload. Thus they begin with an
-unsigned short integer size, and the empty string would be encoded as `0x0000`. 
+Strings are ASCII encoded and null-terminated. They may consist of just the
+null byte `0x0000`. No string will exceed 65519 bytes in length.
 
 Methods
 =======
@@ -99,7 +97,8 @@ successful.
 
 **Client request**  
 _Opcode_: `0x10`  
-_Payload_: 1. `(amt) initialDepositAmount`
+_Account_: (undefined)
+_Amount_: `initialDepositAmount`
 
 **Server response (success)**  
 _Opcode_: `0x11`  
