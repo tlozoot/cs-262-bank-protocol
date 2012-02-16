@@ -204,7 +204,7 @@ void handle_connection(int connfd, struct hostent *hp, char *haddrp)
         else {
             printf("%s (%s) - [opcode %d]\n", hp->h_name, haddrp, request->opcode);
             response->opcode = 0x91;
-            sprintf(response->error, "Opcode 0x%x was not recognized", request->opcode);
+            sprintf(response->error, "Opcode 0x%02x was not recognized", request->opcode);
             printf("# Error 0x91 (Unknown opcode): %s\n", response->error);
         }
         

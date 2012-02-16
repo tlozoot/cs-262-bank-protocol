@@ -54,43 +54,90 @@ int parse_buf(char buf[], msg_t *msg)
 {    
     // Get pointers to start of arguments
     char *arg1 = strchr(buf, ' ');
-    char *arg2 = strchr(arg1 + 1, ' ');
+    char *arg2 = arg1 ? strchr(arg1 + 1, ' ') : NULL;
         
     if (strncmp(buf, "create", 6) == 0) {
         msg->opcode = 0x10;
-        msg->amt = atoi(arg1);
-        return 1;
+        if (arg1) {
+            msg->amt = atoi(arg1);
+            return 1;
+        } else {
+            printf("Usage: create <amount>\n");
+            return 0;
+        }
     }
     
     else if (strncmp(buf, "deposit", 7) == 0) {
         msg->opcode = 0x20;
-        msg->acct = atoi(arg1);
-        msg->amt = atoi(arg2);
-        return 1;
+        if (arg1 && arg2) {
+            msg->acct = atoi(arg1);
+            msg->amt = atoi(arg2);
+            return 1;
+        } else {
+            printf("Usage: deposit <account> <amount>\n");
+            return 0;
+        }
     }
     
     else if (strncmp(buf, "withdraw", 8) == 0) {
         msg->opcode = 0x30;
-        msg->acct = atoi(arg1);
-        msg->amt = atoi(arg2);
-        return 1;
+        if (arg1 && arg2) {
+            msg->acct = atoi(arg1);
+            msg->amt = atoi(arg2);
+            return 1;
+        } else {
+            printf("Usage: withdraw <account> <amount>\n");
+            return 0;
+        }
     }
     
     else if (strncmp(buf, "balance", 7) == 0) {
         msg->opcode = 0x40;
-        msg->acct = atoi(arg1);
-        return 1;
+        if (arg1) {
+            msg->acct = atoi(arg1);
+            return 1;
+        } else {
+            printf("Usage: balance <acct>");
+            return 0;
+        }
     }
     
     else if (strncmp(buf, "close", 5) == 0) {
         msg->opcode = 0x50;
-        msg->acct = atoi(arg1);
-        return 1;
+        if (arg1) {
+            msg->acct = atoi(arg1);
+            return 1;
+        } else {
+            printf("Usage: close <acct>");
+            return 0;
+        }
     }
     
     else if (strncmp(buf, "op", 2) == 0) {
-        msg->opcode = atoi(arg1);
-        return 1;
+        if (arg1) {
+            msg->opcode = atoi(arg1);
+            return 1;
+        } else {
+            printf("Usage: op <opcode>");
+            return 0;
+        }
+    }
+    
+    else if (strncmp(buf, "quit", 4) == 0) {
+        exit(0);
+    }
+    
+    else if (strncmp(buf, "help", 4) == 0) {
+        printf("Available commands:\n"
+        "  help\n"
+        "  create <amount>\n"
+        "  deposit <account> <amount>\n"
+        "  withdraw <account> <amount>\n"
+        "  balance <account>\n"
+        "  close <account>\n"
+        "  op <opcode>\n"
+        "  quit\n");
+        return 0;
     }
     
     else {
